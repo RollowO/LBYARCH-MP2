@@ -29,7 +29,7 @@ gcc CAssembly.c x64.obj -o test.exe
 ```
 
 
-### Results & Screenshots
+## Results & Screenshots
 <img width="696" height="151" alt="image" src="https://github.com/user-attachments/assets/7d549f7e-b143-4276-aa91-ba6d157c37c4" />
 
 The Photo above contains the C correctness check and the performance of the kernels. From the results seen above, theres clearly a massive difference between the cycle C takes and x64 sasm takes.
