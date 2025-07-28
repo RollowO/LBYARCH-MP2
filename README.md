@@ -39,3 +39,6 @@ C kernel took more than double the cycles x86-x64 took in the results.
 <img width="856" height="224" alt="image" src="https://github.com/user-attachments/assets/c31bbfc0-9e91-4502-a126-db8218aac161" />
 
 In the main C file, it contains the correctness check and checks all of the results, if theres a mismatch then it will say so. Moreover, results are stored at Z1[] and Z2[] so further checking for each number can be made.
+
+## Short Video
+Short video can be found on the repository as it is too big to fit in the README.md (It only allows up to 10 mb).
