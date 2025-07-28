@@ -11,16 +11,25 @@ This project implements a kernel to compute the Euclidean distances between poin
   - Call to `x64` assembly kernel
 
 ## How to Run
-
-### 1. Assemble the x86-64 kernel
+### 1. Open directory/ location of the folder in terminal
+```bash
+cd (LOCATION/LOCATION)
+```
+### 2. Assemble the x86-64 kernel
 ```bash
 nasm -f win64 x64.asm -o x64.obj
 ```
-### 2. Compile the C program with the kernel object file
+### 3. Compile the C program with the kernel object file
 ```bash
 gcc CAssembly.c x64.obj -o test.exe
 ```
-### 3. Execute the compiled program
+### 4. Execute the compiled program
 ```bash
 .\test.exe
 ```
+
+
+### Results & Screenshots
+<img width="632" height="107" alt="image" src="https://github.com/user-attachments/assets/88398c4e-5e7b-42b1-abf9-dc08624039c4" />
+
+The Photo above contains the C correctness check and the performance of the kernels. From the results seen above, theres clearly a massive difference between the cycle C takes and x64 sasm takes.
