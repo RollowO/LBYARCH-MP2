@@ -38,4 +38,4 @@ From the results above, C kernel took 79187542210 cycles while x86-x64 only took
 C kernel took more than double the cycles x86-x64 took in the results.
 <img width="856" height="224" alt="image" src="https://github.com/user-attachments/assets/c31bbfc0-9e91-4502-a126-db8218aac161" />
 
-In the main C file, it contains the correctness check and checks all of the results, if theres a mismatch then it will say so.
+In the main C file, it contains the correctness check and checks all of the results, if theres a mismatch then it will say so. Moreover, results are stored at Z1[] and Z2[] so further checking for each number can be made.
