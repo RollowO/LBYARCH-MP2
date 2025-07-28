@@ -30,6 +30,12 @@ gcc CAssembly.c x64.obj -o test.exe
 
 
 ### Results & Screenshots
-<img width="632" height="107" alt="image" src="https://github.com/user-attachments/assets/88398c4e-5e7b-42b1-abf9-dc08624039c4" />
+<img width="696" height="151" alt="image" src="https://github.com/user-attachments/assets/7d549f7e-b143-4276-aa91-ba6d157c37c4" />
 
 The Photo above contains the C correctness check and the performance of the kernels. From the results seen above, theres clearly a massive difference between the cycle C takes and x64 sasm takes.
+From the results above, C kernel took 79187542210 cycles while x86-x64 only took 31124452345 cycles for the vector size 2^27 and 30 runs for each kernel. 
+
+C kernel took more than double the cycles x86-x64 took in the results.
+<img width="856" height="224" alt="image" src="https://github.com/user-attachments/assets/c31bbfc0-9e91-4502-a126-db8218aac161" />
+
+In the main C file, it contains the correctness check and checks all of the results, if theres a mismatch then it will say so.

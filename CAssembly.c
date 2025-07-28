@@ -1,11 +1,8 @@
 #include <stdio.h>
-#include <math.h>
+#include <stdlib.h>
 #include <stdint.h>
-#include <x86intrin.h>  // For __rdtsc
-
-// Prototypes
-void x64(double* Z, const double* X1, const double* X2,
-         const double* Y1, const double* Y2, int n);
+#include <math.h>
+#include <x86intrin.h>  // for __rdtsc
 
 void euclidean_c(const double *X1, const double *X2,
                  const double *Y1, const double *Y2,
@@ -16,44 +13,89 @@ void euclidean_c(const double *X1, const double *X2,
         Z[i] = sqrt(dx * dx + dy * dy);
     }
 }
+void x64(double *Z, const double *X1, const double *X2,
+         const double *Y1, const double *Y2, int n);  // 'int' if your ASM uses 32-bit n
 
 int main() {
-    size_t n = 4;
-    double X1[] = {1.5, 4.0, 3.5, 2.0};
-    double X2[] = {3.0, 2.5, 2.5, 1.0};
-    double Y1[] = {4.0, 3.0, 3.5, 3.0};
-    double Y2[] = {2.0, 2.5, 1.0, 1.5};
-    double Z_asm[4] = {0};
-    double Z_c[4] = {0};
+    size_t n = 1UL << 27;  // 2^27 = 134,217,728
 
-    uint64_t total_cycles_asm = 0;
-    uint64_t total_cycles_c = 0;
+    // Allocate aligned memory
+    double *X1 = _aligned_malloc(n * sizeof(double), 32);
+    double *X2 = _aligned_malloc(n * sizeof(double), 32);
+    double *Y1 = _aligned_malloc(n * sizeof(double), 32);
+    double *Y2 = _aligned_malloc(n * sizeof(double), 32);
+    double *Z1 = _aligned_malloc(n * sizeof(double), 32);  // C result
+    double *Z2 = _aligned_malloc(n * sizeof(double), 32);  // ASM result
 
-    // Benchmark ASM
-    for (int i = 0; i < 30; ++i) {
-        uint64_t start = __rdtsc();
-        x64(Z_asm, X1, X2, Y1, Y2, (int)n);
-        uint64_t end = __rdtsc();
-        total_cycles_asm += (end - start);
+    if (!X1 || !X2 || !Y1 || !Y2 || !Z1 || !Z2) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return 1;
     }
 
-    // Benchmark C
-    for (int i = 0; i < 30; ++i) {
+    // Initialize input
+    for (size_t i = 0; i < n; ++i) {
+        X1[i] = 1.0 * i;
+        X2[i] = 2.0 * i;
+        Y1[i] = 0.5 * i;
+        Y2[i] = 1.5 * i;
+    }
+
+    // -----------------------
+    // Benchmark C version
+    // -----------------------
+    uint64_t total_cycles_c = 0;
+    for (int run = 0; run < 30; ++run) {
         uint64_t start = __rdtsc();
-        euclidean_c(X1, X2, Y1, Y2, Z_c, n);
+        euclidean_c(X1, X2, Y1, Y2, Z1, n);
         uint64_t end = __rdtsc();
         total_cycles_c += (end - start);
     }
 
-    printf("Average CPU cycles over 30 runs (n = %zu):\n", n);
-    printf("  Assembly : %llu cycles\n", total_cycles_asm / 30);
-    printf("  C version: %llu cycles\n", total_cycles_c / 30);
-
-    // Verify correctness
-    printf("\nResults:\n");
-    for (int i = 0; i < (int)n; ++i) {
-        printf("Z_asm[%d] = %f\tZ_c[%d] = %f\n", i, Z_asm[i], i, Z_c[i]);
+    // -----------------------
+    // Benchmark Assembly version
+    // -----------------------
+    uint64_t total_cycles_asm = 0;
+    for (int run = 0; run < 30; ++run) {
+        uint64_t start = __rdtsc();
+        x64(Z2, X1, X2, Y1, Y2, (int)n);  // Use (int)n if your ASM uses 32-bit int
+        uint64_t end = __rdtsc();
+        total_cycles_asm += (end - start);
     }
+
+    // -----------------------
+    // Verify correctness
+    // -----------------------
+    int mismatch = 0;
+    for (size_t i = 0; i < n; ++i) {
+        if (fabs(Z1[i] - Z2[i]) > 1e-9) {
+            printf("Mismatch at i = %zu: C = %f, ASM = %f\n", i, Z1[i], Z2[i]);
+            mismatch = 1;
+            break;
+        }
+    }
+
+    // -----------------------
+    // Print results
+    // -----------------------
+    printf("Total cycles for each kernel:\n");
+    printf("  C version:    %llu cycles\n", total_cycles_c);
+    printf("  x64 version:  %llu cycles\n", total_cycles_asm);
+    printf("Average CPU cycles over 30 runs (n = %zu):\n", n);
+    printf("  C version:    %llu cycles\n", total_cycles_c / 30);
+    printf("  x64 version:  %llu cycles\n", total_cycles_asm / 30);
+    printf("Sample C: Z[0] = %f, Z[1] = %f\n", Z1[0], Z1[1]);
+    printf("Sample Asm: Z[0] = %f, Z[1] = %f\n", Z2[0], Z2[1]);
+
+    if (!mismatch) {
+        printf("Outputs match.\n");
+    }
+
+    _aligned_free(X1);
+    _aligned_free(X2);
+    _aligned_free(Y1);
+    _aligned_free(Y2);
+    _aligned_free(Z1);
+    _aligned_free(Z2);
 
     return 0;
 }
